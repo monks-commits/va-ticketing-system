@@ -326,19 +326,19 @@ async function loadSeanceConfig() {
 
     
     function seatKey(meta){
-      const row  = meta.row ?? meta.index ?? 0;
-      const seat = meta.seat ?? meta.index ?? 0;
+  const row = meta.row;
 
-      if (meta.zone === "Партер") return `P${row}-M${seat}`;
-      if (String(meta.zone).startsWith("Амфітеатр")) return `A${row}-M${seat}`;
-      if (meta.zone === "Балкон") return `B${row}-M${seat}`;
+  let seat = meta.seat;
 
-      // IMPORTANT: ложа A всегда A0, ложа B всегда B0
-      if (meta.zone === "Ложа А") return `A0-M${seat}`;
-      if (meta.zone === "Ложа Б") return `B0-M${seat}`;
+  // учитываем проходы
+  if (meta.aisles && meta.aisles.length) {
+    meta.aisles.forEach(a => {
+      if (seat > a) seat--;
+    });
+  }
 
-      return `P${row}-M${seat}`;
-    }
+  return `P${row}-M${seat}`;
+}
 
     function seatKeyToHuman(k){
       const m = String(k).match(/^([PAB])(\d+)-M(\d+)$/i);
