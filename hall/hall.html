@@ -390,7 +390,11 @@ async function loadSeanceConfig() {
 function applySeanceConfig(meta) {
   if (!SEANCE_CONFIG) return null;
 
-  const key = seatKey(meta).trim();
+  const key = seatKey(meta)
+  .replace(/^0+/, "")
+  .replace("-M0", "-M")
+  .replace(/^([A-Z])0+/, "$1")
+  .trim();
 
   // 1️⃣ Индивидуальное место
   if (SEANCE_CONFIG.seat_overrides?.[key]) {
