@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ваш Адмін — система продажу квитків</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      background:#0b1220;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+    }
+
+    .card{
+      background:#1f2937;
+      padding:28px;
+      border-radius:18px;
+      box-shadow:0 20px 50px rgba(0,0,0,.4);
+      width:320px;
+      text-align:center;
+    }
+
+    h1{
+      margin-bottom:20px;
+      font-size:22px;
+    }
+
+    .btn{
+      display:block;
+      width:100%;
+      padding:14px;
+      margin-top:12px;
+      border:none;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:16px;
+      transition:0.2s;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+      opacity:0.95;
+    }
+
+    .client{
+      background:#374151;
+      color:#fff;
+    }
+
+    .cashier{
+      background:#16a34a;
+      color:#fff;
+    }
+
+    .admin{
+      background:#2563eb;
+      color:#fff;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>Ваш Адмін</h1>
+
+  <button class="btn client" onclick="goClient()">
+    Афіша (Клієнт)
+  </button>
+
+  <button class="btn cashier" onclick="goCashier()">
+    Касир
+  </button>
+
+  <button class="btn admin" onclick="goAdmin()">
+    Адмін
+  </button>
+</div>
+
+<script>
+function goClient(){
+  location.href = "./afisha.html";
+}
+
+function goCashier(){
+  location.href = "./cashier/hall-cash.html";
+}
+
+function goAdmin(){
+  location.href = "./admin/index.html";
+}
+</script>
+
+</body>
+</html>
