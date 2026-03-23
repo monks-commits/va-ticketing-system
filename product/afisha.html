@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Афіша — Найменування майданчика</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    .afisha-grid{
+      display:grid;
+      gap:16px;
+      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      margin-top:20px;
+    }
+    .afisha-card{
+      background:#fff;
+      border-radius:12px;
+      border:1px solid #e5e7eb;
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+    .afisha-poster{
+      width:100%;
+      height:260px;
+      object-fit:cover;
+      border-radius:10px;
+      background:#e5e7eb;
+    }
+    .meta{color:#6b7280;font-size:14px;}
+    .btn-row{
+      display:flex;
+      gap:8px;
+      margin-top:6px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="site-header"></div>
+<script type="module" src="scripts/include.js"></script>
+
+<main class="main">
+  <section class="section">
+    <div class="container">
+      <h1>Афіша</h1>
+      <p class="meta">Оберіть виставу та перейдіть до вибору місць у залі.</p>
+
+      <div id="afisha-grid" class="afisha-grid"></div>
+      <p id="afisha-empty" class="meta" style="display:none;margin-top:12px">
+        Наразі немає запланованих подій.
+      </p>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script>
+(async () => {
+
+  const grid = document.getElementById("afisha-grid");
+  const emptyEl = document.getElementById("afisha-empty");
+
+  try {
+
+    const res = await fetch("data/seances/index.json", { cache: "no-store" });
+    const seances = res.ok ? await res.json() : [];
+
+    if (!Array.isArray(seances) || !seances.length) {
+      emptyEl.style.display = "block";
+      return;
+    }
+
+    const cards = [];
+
+    for (const seanceId of seances) {
+
+      const showSlug = seanceId.split("-")[0];
+
+      const showRes = await fetch(`data/shows/${showSlug}.json`, { cache: "no-store" });
+      if (!showRes.ok) continue;
+
+      const show = await showRes.json();
+
+      cards.push(`
+        <article class="afisha-card">
+          ${show.poster ? `
+            <img src="${show.poster}" class="afisha-poster" />
+          ` : ""}
+
+          <div><strong>${show.title}</strong></div>
+
+          <div class="meta">${seanceId}</div>
+
+          <div class="btn-row">
+            <a class="btn"
+              href="spectacles/hall.html?show=${showSlug}&seance=${seanceId}">
+              Вибрати місця
+            </a>
+          </div>
+        </article>
+      `);
+    }
+
+    grid.innerHTML = cards.join("");
+
+  } catch(e) {
+    console.error(e);
+    emptyEl.style.display = "block";
+  }
+
+})();
+
+</script>
+
+</body>
+</html>
