@@ -1072,15 +1072,14 @@ if (cfg && cfg.color) {
       const prices = {};
       for (const k of keys) prices[k] = Number(selected.get(k)?.price || 0);
 
-      const op = {
-        op_id,
-        type: "sale",
-        seance_id: SEANCE_ID,
-        show_slug: showSlug,
-        seats: keys,
-        prices,
-        sold_at: new Date().toISOString(),
-      };
+      const ops = keys.map(k => ({
+  op_id: genOpId(), // отдельный op_id на каждое место
+  type: "sale",
+  seance_id: SEANCE_ID,
+  seat_label: k,
+  price: Number(prices[k] || 0),
+  created_at: new Date().toISOString()
+}));
 
       const queue = loadQueue();
       queue.push(op);
