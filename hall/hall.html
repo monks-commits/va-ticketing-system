@@ -250,43 +250,40 @@ function renderHallFromJson(HALL_RAW) {
 }
     
 
-async function loadTakenSeats() { 
-  takenSeats.clear();
-
-
-  
-  if (!SEANCE_ID) return;
+async function loadTakenSeats() {
+  if (!SEANCE_ID) return new Set();
 
   const url =
-  `${SUPABASE_URL}/rest/v1/tickets` +
-  `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
-  `&select=seat_label`;
-
+    `${SUPABASE_URL}/rest/v1/tickets` +
+    `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
+    `&select=seat_label`;
 
   const res = await fetch(url, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-    cache: "no-store"
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
   });
 
-  if (!res.ok) {
-    console.warn("tickets load failed", res.status);
-    return;
-  }
+  if (!res.ok) return new Set();
 
   const rows = await res.json().catch(() => []);
-  rows.forEach(r => {
-    if (r?.seat_label) takenSeats.add(String(r.seat_label).trim());
-  });
-}
 
+  const set = new Set();
+
+  rows.forEach(r => {
+    if (r?.seat_label) set.add(String(r.seat_label).trim());
+  });
+
+  return set;
+}
     
 
 let SEANCE_CONFIG = null;
 
 // ⬇️ ВОТ СЮДА ВСТАВЛЯЕШЬ
+
+    
 async function loadBookedSeats() {
   if (!SEANCE_ID) return new Set();
 
@@ -307,18 +304,16 @@ async function loadBookedSeats() {
 
   const rows = await res.json().catch(() => []);
 
-  const booked = new Set();
+  const set = new Set();
 
   rows.forEach(r => {
     if (Array.isArray(r.seats)) {
-      r.seats.forEach(s => booked.add(String(s).trim()));
+      r.seats.forEach(s => set.add(String(s).trim()));
     }
   });
 
-  return booked;
+  return set;
 }
-    
-
 async function loadSeanceConfig() {
   if (!SEANCE_ID) return null;
 
