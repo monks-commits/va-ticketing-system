@@ -1082,8 +1082,8 @@ if (cfg && cfg.color) {
 }));
 
       const queue = loadQueue();
-      queue.push(op);
-      saveQueue(queue);
+queue.push(...ops);
+saveQueue(queue);
 
       for (const k of keys){
         if (takenSeatsOnline.has(k)) continue;
