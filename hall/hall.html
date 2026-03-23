@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" /> 
   <title>Схема залу</title>
 
   <link rel="stylesheet" href="../styles.css" />
@@ -645,7 +645,7 @@ if (!saleAllowed) {
 
   const seatsCsv = keys.join(",");
 
-  const u = new URL("./order.html", location.href);
+  const u = new URL("../product/order.html", location.href);
   u.searchParams.set("show", showSlug);
   u.searchParams.set("title", showTitle);
   u.searchParams.set("seats", seatsCsv);
@@ -661,7 +661,7 @@ if (!saleAllowed) {
   SEANCE_CONFIG = await loadSeanceConfig();
   await loadTakenSeats();
 
-  const res = await fetch("../product/data/hall/academy.json");
+  const res = await fetch("../data/hall/academy.json");
   const HALL = await res.json();
 
  renderHallFromJson(HALL);
