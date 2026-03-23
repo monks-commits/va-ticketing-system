@@ -358,7 +358,7 @@ async function loadSeanceConfig() {
 function applySeanceConfig(meta) {
   if (!SEANCE_CONFIG) return null;
 
-  const key = seatKey(meta);
+  const key = seatKey(meta).trim();
 
   // 1️⃣ Индивидуальное место
   if (SEANCE_CONFIG.seat_overrides?.[key]) {
