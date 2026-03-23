@@ -442,12 +442,15 @@ btn.textContent = label;
 btn.className = "seat" + (finalClass ? " " + finalClass : "");
 btn.dataset.price = finalPrice;
 
+const normalizedKey = key.toUpperCase().replace(/\s/g, "");
+
+      
 // 🔴 SOLD / RESERVED
-if (window.takenSeats && window.takenSeats.has(key)) {
+if (window.takenSeats && window.takenSeats.has(normalizedKey)) {
   btn.classList.add("seat--sold");
   btn.disabled = true;
 
-} else if (window.bookedSeats && window.bookedSeats.has(key)) {
+} else if (window.bookedSeats && window.bookedSeats.has(normalizedKey)) {
   btn.classList.add("seat--reserved");
   btn.disabled = true;
 }
