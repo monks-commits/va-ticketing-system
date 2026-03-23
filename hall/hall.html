@@ -661,7 +661,7 @@ if (!saleAllowed) {
   SEANCE_CONFIG = await loadSeanceConfig();
   await loadTakenSeats();
 
-  const res = await fetch("../../data/hall/academy.json");
+  const res = await fetch("../product/data/hall/academy.json");
   const HALL = await res.json();
 
  renderHallFromJson(HALL);
