@@ -698,8 +698,11 @@ if (!saleAllowed) {
 
   // 🔴 ДОБАВИТЬ ЭТО
   SEANCE_CONFIG = await loadSeanceConfig();
-  const takenSeats = await loadTakenSeats();
+     
+  
+const takenSeats = await loadTakenSeats();
 const bookedSeats = await loadBookedSeats();
+     
 
   const res = await fetch("../data/hall/academy.json");
   const HALL = await res.json();
