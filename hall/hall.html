@@ -449,10 +449,14 @@ if (cfg && cfg.color) {
       
       
 
-      if (takenSeats.has(key)){
-        btn.classList.add("seat--taken");
-        btn.disabled = true;
-      }
+      if (takenSeats.has(key)) {
+  btn.classList.add("seat--taken");
+  btn.disabled = true;
+
+} else if (bookedSeats.has(key)) {
+  btn.classList.add("seat--booked");
+  btn.disabled = true;
+}
 
 if (!saleAllowed) {
   btn.classList.add("seat--no-sale");
