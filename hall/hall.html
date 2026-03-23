@@ -273,7 +273,6 @@ async function loadTakenSeats() {
 
   rows.forEach(r => {
     if (r?.seat_label) set.add(String(r.seat_label).trim());
-  });
 
   return set;
 }
