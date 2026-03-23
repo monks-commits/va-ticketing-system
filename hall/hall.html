@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" /> 
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Схема залу</title>
 
   <link rel="stylesheet" href="../styles.css" />
@@ -135,10 +135,6 @@
   <script type="module" src="../scripts/include.js"></script>
 
   <script>
-
-let takenSeats = new Set();
-let bookedSeats = new Set();
-    
     const qs = new URLSearchParams(location.search);
 
 const showSlug  = (qs.get("show")   || "").trim();
@@ -184,7 +180,7 @@ const SEANCE_ID = (qs.get("seance") || "").trim(); // ← ВАЖНО
 }));
 
 
-  
+    const takenSeats = new Set(); // seat_label keys like P2-M2 / A19-M12 / B1-M5 / A0-M1 / B0-M1
 
 function renderHallFromJson(HALL_RAW) {
   const block = document.getElementById("parter-block");
@@ -251,76 +247,39 @@ function renderHallFromJson(HALL_RAW) {
     
 
 async function loadTakenSeats() {
-  if (!SEANCE_ID) return new Set();
+  takenSeats.clear();
+
+  if (!showSlug) return;
 
   const url =
-    `${SUPABASE_URL}/rest/v1/tickets` +
-    `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
-    `&select=seat_label`;
+  `${SUPABASE_URL}/rest/v1/tickets` +
+  `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
+  `&select=seat_label`;
+
 
   const res = await fetch(url, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-    }
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    cache: "no-store"
   });
 
-  if (!res.ok) return new Set();
+  if (!res.ok) {
+    console.warn("tickets load failed", res.status);
+    return;
+  }
 
   const rows = await res.json().catch(() => []);
-
-  const set = new Set();
-
   rows.forEach(r => {
-    if (r?.seat_label) {
-      set.add(
-        String(r.seat_label)
-          .trim()
-          .toUpperCase()
-          .replace(/\s/g, "")
-      );
-    }
+    if (r?.seat_label) takenSeats.add(String(r.seat_label));
   });
-
-  return set;
 }
+
     
 
 let SEANCE_CONFIG = null;
 
-// ⬇️ ВОТ СЮДА ВСТАВЛЯЕШЬ
-
-    
-async function loadBookedSeats() {
-  if (!SEANCE_ID) return new Set();
-
-  const url =
-    `${SUPABASE_URL}/rest/v1/bookings` +
-    `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
-    `&status=eq.hold` +
-    `&select=seats`;
-
-  const res = await fetch(url, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-    }
-  });
-
-  if (!res.ok) return new Set();
-
-  const rows = await res.json().catch(() => []);
-
-  const set = new Set();
-
-  rows.forEach(r => {
-    if (Array.isArray(r.seats)) {
-      r.seats.forEach(s => set.add(String(s).trim()));
-    }
-  });
-
-  return set;
-}
 async function loadSeanceConfig() {
   if (!SEANCE_ID) return null;
 
@@ -397,11 +356,7 @@ async function loadSeanceConfig() {
 function applySeanceConfig(meta) {
   if (!SEANCE_CONFIG) return null;
 
-  const key = seatKey(meta)
-  .replace(/^0+/, "")
-  .replace("-M0", "-M")
-  .replace(/^([A-Z])0+/, "$1")
-  .trim();
+  const key = seatKey(meta);
 
   // 1️⃣ Индивидуальное место
   if (SEANCE_CONFIG.seat_overrides?.[key]) {
@@ -432,8 +387,8 @@ function applySeanceConfig(meta) {
 }
 
     
-   function makeSeatElement(key, label, extraClass, price, meta) {
-  let finalPrice = price;
+    function makeSeatElement(key,label,extraClass,price,meta){
+        let finalPrice = price;
   let finalClass = extraClass;
   let saleAllowed = true;
 
@@ -443,46 +398,39 @@ function applySeanceConfig(meta) {
     if (cfg.class) finalClass = cfg.class;
     if (cfg.sale === false) saleAllowed = false;
   }
+      const btn = document.createElement("button");
+btn.type = "button";
+btn.textContent = label;
+btn.className = "seat" + (finalClass ? " " + finalClass : "");
+btn.dataset.price = finalPrice;
 
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.textContent = label;
-  btn.className = "seat" + (finalClass ? " " + finalClass : "");
-  btn.dataset.price = finalPrice;
-
-  // ✅ нормализация ключа
-  const normalizedKey = key.toUpperCase().replace(/\s/g, "");
-
-  // ✅ занятые места
-  if (takenSeats.has(normalizedKey)) {
-    btn.classList.add("seat--taken");
-    btn.disabled = true;
-  }
-
-  // ✅ забронированные (если понадобятся)
-  if (bookedSeats.has(normalizedKey)) {
-    btn.classList.add("seat--reserved");
-    btn.disabled = true;
-  }
-
-  // 🎨 цвет из конфигурации
-  if (cfg && cfg.color) {
-    btn.style.background = cfg.color;
-    btn.style.color = "#fff";
-  }
-
-  // 🚫 запрет продажи
-  if (!saleAllowed) {
-    btn.classList.add("seat--no-sale");
-    btn.disabled = true;
-  }
-
-  btn.addEventListener("click", () => onSeatClick(btn, key, meta, finalPrice));
-
-  return btn;
+// 🎨 APPLY COLOR FROM SEANCE
+if (cfg && cfg.color) {
+  btn.style.background = cfg.color;
+  btn.style.color = "#fff";
 }
-    
-    
+
+
+      
+      
+
+      if (takenSeats.has(key)){
+        btn.classList.add("seat--taken");
+        btn.disabled = true;
+      }
+
+if (!saleAllowed) {
+  btn.classList.add("seat--no-sale");
+  btn.disabled = true;
+}
+
+      
+      btn.addEventListener("click", ()=>onSeatClick(btn, key, meta, finalPrice));
+      return btn;
+    }
+
+    const selected = new Map(); // key -> { meta, price }
+
     function onSeatClick(btn, key, meta, price){
       if (btn.classList.contains("seat--selected")){
         btn.classList.remove("seat--selected");
@@ -697,7 +645,7 @@ function applySeanceConfig(meta) {
 
   const seatsCsv = keys.join(",");
 
-  const u = new URL("../product/order.html", location.href);
+  const u = new URL("./order.html", location.href);
   u.searchParams.set("show", showSlug);
   u.searchParams.set("title", showTitle);
   u.searchParams.set("seats", seatsCsv);
@@ -710,14 +658,10 @@ function applySeanceConfig(meta) {
    (async ()=>{
 
   // 🔴 ДОБАВИТЬ ЭТО
-  SEANCE_CONFIG = await loadSeanceConfig(); 
-     
-  
-takenSeats = await loadTakenSeats();
-bookedSeats = await loadBookedSeats();
-     
+  SEANCE_CONFIG = await loadSeanceConfig();
+  await loadTakenSeats();
 
-  const res = await fetch("../data/hall/academy.json");
+  const res = await fetch("../product/data/hall/academy.json");
   const HALL = await res.json();
 
  renderHallFromJson(HALL);
