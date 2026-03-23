@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" /> 
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Схема залу</title>
 
   <link rel="stylesheet" href="../styles.css" />
@@ -249,12 +249,13 @@ function renderHallFromJson(HALL_RAW) {
 async function loadTakenSeats() {
   takenSeats.clear();
 
-  if (!SEANCE_ID) return;
+  if (!showSlug) return;
 
   const url =
-    `${SUPABASE_URL}/rest/v1/tickets` +
-    `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
-    `&select=seat_label`;
+  `${SUPABASE_URL}/rest/v1/tickets` +
+  `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
+  `&select=seat_label`;
+
 
   const res = await fetch(url, {
     headers: {
@@ -270,16 +271,8 @@ async function loadTakenSeats() {
   }
 
   const rows = await res.json().catch(() => []);
-
   rows.forEach(r => {
-    if (!r?.seat_label) return;
-
-    const normalized = String(r.seat_label)
-      .trim()
-      .toUpperCase()
-      .replace(/\s/g, "");
-
-    takenSeats.add(normalized);
+    if (r?.seat_label) takenSeats.add(String(r.seat_label));
   });
 }
 
@@ -333,19 +326,19 @@ async function loadSeanceConfig() {
 
     
     function seatKey(meta){
-  const row = meta.row;
+      const row  = meta.row ?? meta.index ?? 0;
+      const seat = meta.seat ?? meta.index ?? 0;
 
-  let seat = meta.seat;
+      if (meta.zone === "Партер") return `P${row}-M${seat}`;
+      if (String(meta.zone).startsWith("Амфітеатр")) return `A${row}-M${seat}`;
+      if (meta.zone === "Балкон") return `B${row}-M${seat}`;
 
-  // учитываем проходы
-  if (meta.aisles && meta.aisles.length) {
-    meta.aisles.forEach(a => {
-      if (seat > a) seat--;
-    });
-  }
+      // IMPORTANT: ложа A всегда A0, ложа B всегда B0
+      if (meta.zone === "Ложа А") return `A0-M${seat}`;
+      if (meta.zone === "Ложа Б") return `B0-M${seat}`;
 
-  return `P${row}-M${seat}`;
-}
+      return `P${row}-M${seat}`;
+    }
 
     function seatKeyToHuman(k){
       const m = String(k).match(/^([PAB])(\d+)-M(\d+)$/i);
@@ -394,9 +387,8 @@ function applySeanceConfig(meta) {
 }
 
     
-   function makeSeatElement(key, label, extraClass, price, meta){
-
-  let finalPrice = price;
+    function makeSeatElement(key,label,extraClass,price,meta){
+        let finalPrice = price;
   let finalClass = extraClass;
   let saleAllowed = true;
 
@@ -406,47 +398,37 @@ function applySeanceConfig(meta) {
     if (cfg.class) finalClass = cfg.class;
     if (cfg.sale === false) saleAllowed = false;
   }
+      const btn = document.createElement("button");
+btn.type = "button";
+btn.textContent = label;
+btn.className = "seat" + (finalClass ? " " + finalClass : "");
+btn.dataset.price = finalPrice;
 
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.textContent = label;
-  btn.className = "seat" + (finalClass ? " " + finalClass : "");
-  btn.dataset.price = finalPrice;
-
-  if (cfg && cfg.color) {
-    btn.style.background = cfg.color;
-    btn.style.color = "#fff";
-  }
-
-  // 🔥 КЛЮЧ — нормализация
-  const normalizedKey = String(key)
-    .trim()
-    .toUpperCase()
-    .replace(/\s/g, "");
-
-  if (takenSeats.has(normalizedKey)){
-    btn.classList.add("seat--taken");
-    btn.disabled = true;
-  }
-
-  if (!saleAllowed) {
-    btn.classList.add("seat--no-sale");
-    btn.disabled = true;
-  }
-
-  btn.addEventListener("click", ()=>{
-    if (btn.classList.contains("seat--selected")){
-      btn.classList.remove("seat--selected");
-      selected.delete(normalizedKey);
-    } else {
-      btn.classList.add("seat--selected");
-      selected.set(normalizedKey, { meta, price: finalPrice });
-    }
-    updateSummary();
-  });
-
-  return btn;
+// 🎨 APPLY COLOR FROM SEANCE
+if (cfg && cfg.color) {
+  btn.style.background = cfg.color;
+  btn.style.color = "#fff";
 }
+
+
+      
+      
+
+      if (takenSeats.has(key)){
+        btn.classList.add("seat--taken");
+        btn.disabled = true;
+      }
+
+if (!saleAllowed) {
+  btn.classList.add("seat--no-sale");
+  btn.disabled = true;
+}
+
+      
+      btn.addEventListener("click", ()=>onSeatClick(btn, key, meta, finalPrice));
+      return btn;
+    }
+
     const selected = new Map(); // key -> { meta, price }
 
     function onSeatClick(btn, key, meta, price){
@@ -663,7 +645,7 @@ function applySeanceConfig(meta) {
 
   const seatsCsv = keys.join(",");
 
-  const u = new URL("../product/order.html", location.href);
+  const u = new URL("./order.html", location.href);
   u.searchParams.set("show", showSlug);
   u.searchParams.set("title", showTitle);
   u.searchParams.set("seats", seatsCsv);
@@ -679,7 +661,7 @@ function applySeanceConfig(meta) {
   SEANCE_CONFIG = await loadSeanceConfig();
   await loadTakenSeats();
 
-  const res = await fetch("../data/hall/academy.json");
+  const res = await fetch("../../data/hall/academy.json");
   const HALL = await res.json();
 
  renderHallFromJson(HALL);
