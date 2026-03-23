@@ -249,6 +249,8 @@ function renderHallFromJson(HALL_RAW) {
 async function loadTakenSeats() {
   takenSeats.clear();
 
+console.log("TICKETS FROM SUPA:", rows);
+  
   if (!SEANCE_ID) return;
 
   const url =
