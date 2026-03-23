@@ -135,6 +135,10 @@
   <script type="module" src="../scripts/include.js"></script>
 
   <script>
+
+let takenSeats = new Set();
+let bookedSeats = new Set();
+    
     const qs = new URLSearchParams(location.search);
 
 const showSlug  = (qs.get("show")   || "").trim();
