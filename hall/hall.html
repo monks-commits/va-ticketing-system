@@ -438,6 +438,17 @@ btn.textContent = label;
 btn.className = "seat" + (finalClass ? " " + finalClass : "");
 btn.dataset.price = finalPrice;
 
+// 🔴 SOLD / RESERVED
+if (window.takenSeats && window.takenSeats.has(key)) {
+  btn.classList.add("seat--sold");
+  btn.disabled = true;
+
+} else if (window.bookedSeats && window.bookedSeats.has(key)) {
+  btn.classList.add("seat--reserved");
+  btn.disabled = true;
+}
+      
+
 // 🎨 APPLY COLOR FROM SEANCE
 if (cfg && cfg.color) {
   btn.style.background = cfg.color;
