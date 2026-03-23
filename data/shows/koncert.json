@@ -1,0 +1,9 @@
+{
+  "id": "koncert",
+  "title": "Концерт",
+  "city": "Кривий Ріг",
+  "theatre": "Театр ім. Т. Г. Шевченка",
+  "stage": "Велика сцена",
+  "poster": "images/hulyai-selo.jpg",
+  "description": "<p>Рок-н-ролл.</p>"
+}
