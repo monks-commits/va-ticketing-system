@@ -1094,10 +1094,13 @@ saveQueue(queue);
       const order_id = calcCashOrderId(SEANCE_ID, showSlug, op_id);
       const tickets = keys.map(k => ({
         op_id,
-        order_id,
-        show_slug: showSlug,
-        seat_label: k,
-        price: Number(prices[k] || 0),
+  type: "sale",
+  seance_id: SEANCE_ID,
+  payload: {
+    seat_label: k,
+    price: Number(prices[k] || 0)
+  },
+  created_at: new Date().toISOString()
       }));
 
       pushCashLog({
