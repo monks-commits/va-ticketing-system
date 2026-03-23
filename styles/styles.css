@@ -267,3 +267,7 @@ body {
 #amphi-block .row-line{
   justify-content:center;
 }
+.seat--booked {
+  background: orange;
+  color: #000;
+}
