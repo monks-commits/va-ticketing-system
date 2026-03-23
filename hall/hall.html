@@ -282,6 +282,39 @@ async function loadTakenSeats() {
 
 let SEANCE_CONFIG = null;
 
+// ⬇️ ВОТ СЮДА ВСТАВЛЯЕШЬ
+async function loadBookedSeats() {
+  if (!SEANCE_ID) return new Set();
+
+  const url =
+    `${SUPABASE_URL}/rest/v1/bookings` +
+    `?seance_id=eq.${encodeURIComponent(SEANCE_ID)}` +
+    `&status=eq.hold` +
+    `&select=seats`;
+
+  const res = await fetch(url, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
+
+  if (!res.ok) return new Set();
+
+  const rows = await res.json().catch(() => []);
+
+  const booked = new Set();
+
+  rows.forEach(r => {
+    if (Array.isArray(r.seats)) {
+      r.seats.forEach(s => booked.add(String(s).trim()));
+    }
+  });
+
+  return booked;
+}
+    
+
 async function loadSeanceConfig() {
   if (!SEANCE_ID) return null;
 
