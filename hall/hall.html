@@ -453,14 +453,7 @@ const normalizedKey = key.toUpperCase().replace(/\s/g, "");
 
       
 // 🔴 SOLD / RESERVED
-if (window.takenSeats && window.takenSeats.has(normalizedKey)) {
-  btn.classList.add("seat--taken");
-  btn.disabled = true;
 
-} else if (window.bookedSeats && window.bookedSeats.has(normalizedKey)) {
-  btn.classList.add("seat--reserved");
-  btn.disabled = true;
-}
       
 
 // 🎨 APPLY COLOR FROM SEANCE
