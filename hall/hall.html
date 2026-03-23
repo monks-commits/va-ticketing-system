@@ -272,10 +272,18 @@ async function loadTakenSeats() {
   const set = new Set();
 
   rows.forEach(r => {
-    if (r?.seat_label) set.add(String(r.seat_label).trim());
+    if (r?.seat_label) {
+      set.add(
+        String(r.seat_label)
+          .trim()
+          .toUpperCase()
+          .replace(/\s/g, "")
+      );
+    }
+  });
 
   return set;
-
+}
     
 
 let SEANCE_CONFIG = null;
