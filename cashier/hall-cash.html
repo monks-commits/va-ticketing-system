@@ -1072,18 +1072,19 @@ if (cfg && cfg.color) {
       const prices = {};
       for (const k of keys) prices[k] = Number(selected.get(k)?.price || 0);
 
-      const ops = keys.map(k => ({
-  op_id: genOpId(), // отдельный op_id на каждое место
-  type: "sale",
-  seance_id: SEANCE_ID,
-  seat_label: k,
-  price: Number(prices[k] || 0),
-  created_at: new Date().toISOString()
-}));
+      const op = {
+        op_id,
+        type: "sale",
+        seance_id: SEANCE_ID,
+        show_slug: showSlug,
+        seats: keys,
+        prices,
+        sold_at: new Date().toISOString(),
+      };
 
       const queue = loadQueue();
-queue.push(...ops);
-saveQueue(queue);
+      queue.push(op);
+      saveQueue(queue);
 
       for (const k of keys){
         if (takenSeatsOnline.has(k)) continue;
@@ -1094,13 +1095,10 @@ saveQueue(queue);
       const order_id = calcCashOrderId(SEANCE_ID, showSlug, op_id);
       const tickets = keys.map(k => ({
         op_id,
-  type: "sale",
-  seance_id: SEANCE_ID,
-  payload: {
-    seat_label: k,
-    price: Number(prices[k] || 0)
-  },
-  created_at: new Date().toISOString()
+        order_id,
+        show_slug: showSlug,
+        seat_label: k,
+        price: Number(prices[k] || 0),
       }));
 
       pushCashLog({
